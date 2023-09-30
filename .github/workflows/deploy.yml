@@ -17,7 +17,7 @@ jobs:
           path: /
           remote_path: /
           remote_host: 35.223.159.215
-          remote_user: reillymclaren
+          remote_user: reillymclaren 
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
       # - name: Install SSH Key
       #   uses: shimataro/ssh-key-action@v2
