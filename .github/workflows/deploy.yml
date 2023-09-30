@@ -24,6 +24,6 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          scp -r / 35.223.159.215:/
+          scp -r / 35.223.159.215:~/personalPortfolio/backend
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
