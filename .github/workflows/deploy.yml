@@ -9,26 +9,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: rsync deployments
-        uses: burnett01/rsync-deployments@6.0.0
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
         with:
-          switches: -avzr --delete
-          path: /
-          remote_path: /
-          remote_host: 35.223.159.215
-          remote_user: reillymclaren 
-          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
-      # - name: Install SSH Key
-      #   uses: shimataro/ssh-key-action@v2
-      #   with:
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
           
-      # - name: Adding Known Hosts
-      #   run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      # - name: Deploy to Server
-      #   run: |
-      #     rsync -avz --exclude 'node_modules' --exclude '.git' ./  / ubuntu@${{ secrets.SSH_HOST }}:./
+      - name: Deploy to Server
+        run: |
+          rsync -avz --exclude 'node_modules' --exclude '.git' ./  / reillymclaren@${{ secrets.SSH_HOST }}:./
       
