@@ -22,5 +22,5 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          rsync -avz --exclude 'node_modules' --exclude '.git' ./  / reillymclaren@${{ secrets.SSH_HOST }}:./
+           rsync -avz -e "ssh" ./  / reillymclaren@${{ secrets.SSH_HOST }}:./
       
