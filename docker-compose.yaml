@@ -13,13 +13,13 @@ services:
     volumes:
       - ./nginx/config:/etc/nginx/conf.d
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /tmp/acme_challenge:/tmp/acme_challenge
+      - /tmp/acme_challenge:/tmp/acme_challenge:wr
     networks:
       - app
     restart: always
     depends_on:
      - webserver
-  
+
   webserver:
     container_name: 'webserver'
     image: 'webserver'
@@ -57,4 +57,5 @@ volumes:
 networks:
   app:
     driver: bridge
+
 
