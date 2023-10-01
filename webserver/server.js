@@ -22,10 +22,7 @@ var multer = require('multer');
 var app = express();
 
 app.use(express.static(path.join(__dirname, 'assets')));
-var corsOptions = { 
-    origin: 'http://localhost:4201',  
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-  }
+
 
 
   const envFilePath = path.resolve(__dirname, '.env');
@@ -33,7 +30,15 @@ var corsOptions = {
 // Load environment variables from the specified file
 dotenv.config({ path: envFilePath });
 
-// app.use(cors(corsOptions));
+var corsOptions = { 
+  origin: 'http://localhost:4201',  
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
+if(process.env.ENVIRONMENT == 'Development'){
+  console.log('test!');
+  app.use(cors(corsOptions));
+}
 // Define the way 
 // to consume and produce data through the 
 // exposed APIs
