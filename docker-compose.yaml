@@ -13,7 +13,7 @@ services:
     volumes:
       - ./nginx/config:/etc/nginx/conf.d
       - /tmp/acme_challenge:/tmp/acme_challenge:wr
-      - ./certs/letsencrypt:/etc/letsencrypt:ro
+      - ./certs/live:/etc/letsencrypt/live:ro
     networks:
       - app
     restart: always
