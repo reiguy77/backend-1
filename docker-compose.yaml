@@ -9,7 +9,7 @@ services:
       dockerfile: nginx/Dockerfile
     ports:
       - 80:80
-      - 443:443
+      # - 443:443
     volumes:
       - ./nginx/config:/etc/nginx/conf.d
       - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -17,38 +17,52 @@ services:
     networks:
       - app
     restart: always
-    depends_on:
-     - webserver
-
-  webserver:
-    container_name: 'webserver'
-    image: 'webserver'
-    build:
-      context: .
-      dockerfile: webserver/Dockerfile
+    # depends_on:
+    #  - webserver
+  letsencrypt:
+    container_name: 'certbot-service'
+    image: certbot/certbot:v1.17.0
+    command: sh -c "certbot certonly --expand --webroot -w /tmp/acme_challenge -d backend.reillymclaren.com --text --agree-tos --email reillymclaren20@gmail.com --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=http"
+    entrypoint: ""
+    volumes:
+      - "/etc/letsencrypt:/etc/letsencrypt"
+      - "/tmp/acme_challenge:/tmp/acme_challenge"
     environment:
-      - MONGODB_URL=mongodb://mongodb:27017/webserver
-    volumes:
-      - ./webserver:/webserver
-    networks:
-      - app
-    ports:
-      - 3000:3000
-    restart: always
-    command: node webserver/server.js
+      - TERM=xterm
     depends_on:
-      - mongodb
+      - nginx
+    restart:
+      always
 
-  mongodb:
-    container_name: 'mongodb'
-    image: mongo:latest
-    ports:
-      - '27017:27017'
-    volumes:
-      - dbdata6:/data/db
-      - ./mongodb/mongod.conf:/etc/mongod.conf
-    networks:
-      - app
+  # webserver:
+  #   container_name: 'webserver'
+  #   image: 'webserver'
+  #   build:
+  #     context: .
+  #     dockerfile: webserver/Dockerfile
+  #   environment:
+  #     - MONGODB_URL=mongodb://mongodb:27017/webserver
+  #   volumes:
+  #     - ./webserver:/webserver
+  #   networks:
+  #     - app
+  #   ports:
+  #     - 3000:3000
+  #   restart: always
+  #   command: node webserver/server.js
+  #   depends_on:
+  #     - mongodb
+
+  # mongodb:
+  #   container_name: 'mongodb'
+  #   image: mongo:latest
+  #   ports:
+  #     - '27017:27017'
+  #   volumes:
+  #     - dbdata6:/data/db
+  #     - ./mongodb/mongod.conf:/etc/mongod.conf
+  #   networks:
+  #     - app
 
 volumes:
   dbdata6:
