@@ -1,12 +1,21 @@
-version: "3.3" 
+version: '3'
+
 services:
-  letsencrypt:
-    container_name: 'certbot-service'
-    image: certbot/certbot:v1.17.0
-    command: sh -c "certbot certonly --expand --webroot -w /tmp/acme_challenge -d backend.reillymclaren.com --text --agree-tos --email reillymclaren20@gmail.com --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=http"
-    entrypoint: ""
+  nginx:
+    image: nginx:1.15-alpine
+    restart: unless-stopped
     volumes:
-      - "/etc/letsencrypt:/etc/letsencrypt"
-      - "/tmp/acme_challenge:/tmp/acme_challenge"
-    environment:
-      - TERM=xterm
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
