@@ -20,7 +20,7 @@ services:
     # depends_on:
     #  - webserver
   letsencrypt:
-    container_name: 'certbot-service'
+    container_name: 'certbot'
     image: certbot/certbot:v1.17.0
     command: sh -c "certbot certonly --expand --webroot -w /tmp/acme_challenge -d backend.ruchimaniar.com --text --agree-tos --email reillymclaren20@gmail.com --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=http"
     entrypoint: ""
