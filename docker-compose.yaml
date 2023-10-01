@@ -12,8 +12,8 @@ services:
       - 443:443
     volumes:
       - ./nginx/config:/etc/nginx/conf.d
-      - /etc/letsencrypt:/etc/letsencrypt:ro
       - /tmp/acme_challenge:/tmp/acme_challenge:wr
+      - ./certs/letsencrypt:/etc/letsencrypt:ro
     networks:
       - app
     restart: always
