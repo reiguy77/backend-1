@@ -31,7 +31,6 @@ services:
       - TERM=xterm
     depends_on:
       - nginx
-    restart: never
 
   # webserver:
   #   container_name: 'webserver'
