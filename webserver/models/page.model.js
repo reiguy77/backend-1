@@ -4,7 +4,7 @@ module.exports = mongoose => {
       "page",
       mongoose.Schema(
         {
-            pageName:String,
+            pageName: String,
             pageJson:Object,
             appId: Number
         },

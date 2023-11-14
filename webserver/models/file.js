@@ -6,7 +6,7 @@ module.exports = mongoose => {
           subfolder: String,
           id: String,
           fileName: String,
-          systemFileName:String,
+          systemFileName: String,
           user: String,
           appId: Number
         },

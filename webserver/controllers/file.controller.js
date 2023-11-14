@@ -23,44 +23,93 @@ exports.clearSubfolder = (req, res) =>{
         }); 
 }
 
-exports.getImages = (req, res) => {
-  console.log(req.body);  
-  const {user, appId, categoryName} = req.body;
-  if(!user || !appId || !categoryName){
-    res.send({
-      error:true,
-      message: 'Improper arguments for getImages' 
-    })
-  }
-  ImageCategory.findOne({categoryName, user}).then((category)=>{
-    console.log(category)
-    if(!category){
-      res.send({
-        error:true,
-        message: 'No image category exists with this name'
-      })
-    }
-    Image.find({user:user, appId: appId, categoryId:category._id}).then((data)=>{
-      let ids = data.map(image => {
-        return image.fileId;
-      })
-      File.find({_id:{$in: ids}}).then((data)=>{
-        let fileUrls = data.map((item)=>{
-          return `${appId}/${user}/${item.subfolder}/${item.systemFileName}`;
-        })
-        res.send({data:fileUrls})
-        })
-        .catch(err => {
-          res.status(500).send({
-            error: true,
-            message:
-              err.message || "Some error occurred while fetching the image urls"
-          });
+exports.getImages = async (req, res) => {
+  try {
+
+    const {user, appId, categoryId, imageIds} = req.body;
+    if(!user || !appId || !categoryId){
+      if(!imageIds || !user || !appId ){
+        res.send({
+          error:true,
+          message: 'Improper arguments for getImages' 
         });
-    });   
-  })
- 
-}  
+        return;
+      }
+      else{
+        const imageData = await Image.find({ _id: { $in: imageIds } });
+        let result = await getImagesWithProperties(user, appId, imageData);
+        res.send({ data: result });
+        return;
+      }
+    }
+    
+  const imageData = await Image.find({ user, appId, categoryId });
+    let result = await getImagesWithProperties(user, appId, imageData);
+    res.send({ data: result });
+
+  } catch (err) {
+    res.status(500).send({
+      error: true,
+      message:
+        err.message || "Some error occurred while fetching the data",
+    });
+  }
+};
+
+async function getImagesWithProperties(user, appId, imageData){
+    const ids = imageData.map((image) => image.fileId);
+
+    const fileData = await File.find({ _id: { $in: ids } });
+    const fileUrls = fileData.map((item) => (
+      `${appId}/${user}/${item.subfolder}/${item.systemFileName}`
+    ));
+
+    const imagePropertiesPromises = imageData.map((image) =>
+      Image.findOne({ _id: image._id }, 'properties')
+    );
+
+    const imagePropertiesData = await Promise.all(imagePropertiesPromises);
+
+    const result = fileUrls.map((url, index) => ({
+      url,
+      properties: imagePropertiesData[index].properties,
+      imageId: imagePropertiesData[index]._id
+    }));
+    return result;
+}
+
+exports.updateImageProperties = async (req, res) => {
+  try{
+    const {imageId, imageProperties} = req.body;
+    const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+    const query = { _id:imageId };
+    const update = { properties: imageProperties};
+    const result = await Image.findOneAndUpdate(query, update, options);
+    res.send({
+      error:false,
+      result
+    }) 
+  }
+  catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error saving images and files', error:true });
+  }
+}
+
+exports.deleteImage = (req, res) => {
+  const {user, imageId, appId} = req.body;
+  //Delete file as well
+  Image.deleteOne({user:user, appId:appId, _id:imageId}).then(data=>{
+        res.send(data);
+      })
+      .catch(err => {
+        console.log(err);
+      res.status(500).send({
+          message: "Some error occurred while deleting the files",
+          error: err.message
+      });
+  });
+} 
 
 
 exports.clearImages = (req, res) => {
@@ -105,14 +154,12 @@ exports.addFiles = (req,res) => {
 
 exports.addImages = async (req, res) => {
   const { user, subfolder, appId} = req.body; 
-  const imageFiles = req.files;
+  let imageFiles = req.files;
   let categoryId = await addOrUpdateImageCategory(subfolder, subfolder, user, appId);
-
   try {
+    await fileHelper.compressImages(imageFiles);
     const imagePromises = imageFiles.map(async (file) => {
       let imageProperties = {};
-      const directory = `${baseDirectory}/${user}/${subfolder}`
-      fileHelper.checkDirectoryExists(directory);
       // Save file details in the files collection
       const fileData = {
         subfolder: subfolder,
@@ -131,12 +178,13 @@ exports.addImages = async (req, res) => {
         ...imageProperties
       };
 
-      await Image.create(image);
+      let res = await Image.create(image);
+      return res;
     });
 
-    await Promise.all(imagePromises);
+    let savedImages = await Promise.all(imagePromises);
 
-    res.status(200).json({ message: 'Images and files saved successfully' });
+    res.status(200).json({ message: 'Images and files saved successfully', savedImages});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error saving images and files' });
@@ -146,7 +194,7 @@ exports.addImages = async (req, res) => {
 
 exports.retrieveCategoryNames = (req, res) => {
     const {user} = req.body;
-    ImageCategory.find({user:user})
+    ImageCategory.find({user:user, categoryName: { $not: { $regex: /\*page\*.*/  }}})
     .then(data => {
       console.log(data);
       res.send(data);
@@ -252,6 +300,19 @@ function sendFiles(req, res, ids, user, appId) {
   });
 }
 
+exports.deleteImageCategory = (req,res) => {
+  const {user, categoryId, appId} = req.body;
+  console.log(user, categoryId, appId)
+  ImageCategory.deleteOne({user:user,appId:appId, _id:categoryId}).then(data=>{
+      res.send(data);
+      })
+      .catch(err => {
+      res.status(500).send({
+          message: "Some error occurred while deleting the files",
+          error: err.message
+      });
+      });
+}
 
 exports.clearImageCategories = (req,res) => {
     const {user} = req.body;
@@ -274,10 +335,3 @@ async function addOrUpdateImageCategory(categoryName, subfolder,  user, appId){
     const result = await ImageCategory.findOneAndUpdate(query, update, options)
     return result._id;
 }
-// What do I want to do right now?
-
-/**
- * I want to be able to save all the images I have into the database, 
- * all with an empty imageDescription. Maybe just save that as a json so that it's flexible
- * 
- */

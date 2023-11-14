@@ -1,2 +1,4 @@
 webserver/.env
 webserver/assets
+webserver/node_modules
+*.DS_Store

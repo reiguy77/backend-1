@@ -6,10 +6,8 @@ module.exports = mongoose => {
         {
             id: Number,
             name: String,
-            description: String,
-            cssConfiguration: Object,
+            properties: Object,
             user: String,
-            category: String,
             tags: [String],
             fileId: String,
             categoryId: String,

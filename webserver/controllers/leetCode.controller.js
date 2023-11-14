@@ -5,7 +5,7 @@ exports.getLeetCodeData = async (req, res) => {
         return;
     }
     
-    const query = `query getUserProfile($username: String!) {
+    const query = `query getUserProfile($username: string!) {
             matchedUser(username: $username) {
             username
             submitStats: submitStatsGlobal {
