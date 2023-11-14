@@ -52,10 +52,9 @@ exports.addFirstUser = () => {
 function sendEmailToAdmin(){
   let to = process.env.ADMIN_EMAIL;
   let subject = 'Newly created account!';
-  let text = `Please go to www.ruchimaniar.com/login to 
-    login to your new account. Your credentials are:\n\n
-    email:${process.env.ADMIN_EMAIL}\n
-    password:${process.env.ADMIN_PASSWORD}.
+  let text = `Please go to www.ruchimaniar.com/login to login to your new account! Your credentials are:\n\n
+    email: ${process.env.ADMIN_EMAIL}\n
+    password: ${process.env.ADMIN_PASSWORD}.
     \n\n
     Please contact Reilly McLaren with any questions.`
     emailController.sendEmail(to, subject, text);
