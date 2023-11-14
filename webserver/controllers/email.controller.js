@@ -52,3 +52,31 @@ exports.send = (req, res) => {
 
 
 }
+
+exports.sendEmail = (to, subject, text) => {
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.dreamhost.com', // Replace with your DreamHost SMTP server
+        port: 465, 
+        secure: true, // Set to true if you're using SSL/TLS
+        auth: {
+            user: process.env.SITE_EMAIL, // Your email address
+            pass: process.env.SITE_EMAIL_PASSWORD // Your email password
+        }
+        });
+    
+        // Define the email content
+        const mailOptions = {
+            from: 'contact@ruchimaniar.com', // Your email address
+            to: to, // Recipient's email address
+            subject: subject,
+            text: text
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+            } else {
+                console.log('Email sent successfully!');
+                }
+        });
+    }

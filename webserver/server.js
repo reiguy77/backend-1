@@ -5,6 +5,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const db = require('./models');
 const path = require('path');
+const userController = require('./controllers/user.controller');
 const leetCodeRoutes = require("./routes/leetCodeRoutes");
 const emailRoutes = require("./routes/emailRoutes");
 const fileRoutes = require("./routes/fileRoutes");
@@ -36,7 +37,6 @@ var corsOptions = {
 }
 
 if(process.env.ENVIRONMENT == 'Development'){
-  console.log('test!');
   app.use(cors(corsOptions));
 }
 // Define the way 
@@ -62,6 +62,8 @@ app.use(function(err, req, res, next) {
     
   
 });
+
+userController.addFirstUser();
 
 // Create link to Angular build directory
 // The `ng build` command will save the result

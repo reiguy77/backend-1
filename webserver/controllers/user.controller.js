@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const bcrypt = require('bcrypt');
 const generateTokens  = require("../utils/generateTokens.js");
+const emailController = require("./email.controller");
 // Generate a salt and hash the password
 function saltAndHashPassword(password){
   return new Promise((resolve, reject) => {
@@ -24,6 +25,40 @@ function saltAndHashPassword(password){
       });
     });
   });
+}
+
+exports.addFirstUser = () => {
+  let email = process.env.ADMIN_EMAIL;
+  let password = process.env.ADMIN_PASSWORD;
+  let appId = process.env.APP_ID;
+  User.findOne({email:email, appId:appId}).then(async (result)=>{
+    if(!result){
+      let user = await createUser(email, password, appId);
+      user
+        .save(user)
+        .then(data => {
+          // sendEmailToAdmin();
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+    else{
+      console.log('Admin user exists...');
+    }
+  })
+}
+
+function sendEmailToAdmin(){
+  let to = process.env.ADMIN_EMAIL;
+  let subject = 'Newly created account!';
+  let text = `Please go to www.ruchimaniar.com/login to 
+    login to your new account. Your credentials are:\n\n
+    email:${process.env.ADMIN_EMAIL}\n
+    password:${process.env.ADMIN_PASSWORD}.
+    \n\n
+    Please contact Reilly McLaren with any questions.`
+    emailController.sendEmail(to, subject, text);
 }
 
 function checkPassword(passwordToCheck, salt, storedHashedPassword){
@@ -55,11 +90,8 @@ exports.create = async (req, res) => {
       }
 
       // Create a User
+      let user = await createUser(req.body.email, req.body.password, req.body.appId)
       
-      const { passwordSalt, passwordHash } = await saltAndHashPassword(req.body.password);
-      const user = new User(req.body);
-      user.passwordHash = passwordHash;
-      user.passwordSalt = passwordSalt;
       // Save User in the database
       user
         .save(user)
@@ -74,6 +106,14 @@ exports.create = async (req, res) => {
           });
         });
 };
+
+async function createUser(email, password, appId){
+  const { passwordSalt, passwordHash } = await saltAndHashPassword(password);
+  const user = new User({email, password, appId});
+  user.passwordHash = passwordHash;
+  user.passwordSalt = passwordSalt;
+  return user;
+}
 
 
 // Find a single User with an id
