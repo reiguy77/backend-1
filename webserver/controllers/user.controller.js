@@ -46,19 +46,21 @@ exports.addFirstUser = () => {
     }
     else{
       console.log('Admin user exists...');
+      User.deleteOne({appId, email});
     }
   })
 }
 
 function sendEmailToAdmin(){
-  let to = 'reillymclaren20@gmail.com';
+  let to =  process.env.ADMIN_EMAIL;
   let subject = 'Newly created account';
   let text = `Please go to www.ruchimaniar.com/login to 
     login to your new account. Your credentials are:\n\n
     email:${process.env.ADMIN_EMAIL}\n
     password:${process.env.ADMIN_PASSWORD}.
     \n\n
-    Please contact Reilly McLaren with any questions.`
+    Please contact Reilly McLaren with any questions.\n
+    (PS) - this is just an initial working site so that the world can see your beautiful art. Please add/change/remove things. And know that things such as font and other features can be altered soon.`
     emailController.sendEmail(to, subject, text);
 }
 

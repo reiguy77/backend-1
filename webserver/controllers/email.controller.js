@@ -21,8 +21,8 @@ exports.send = (req, res) => {
     port: 465, 
     secure: true, // Set to true if you're using SSL/TLS
     auth: {
-        user: 'contact@reillymclaren.com', // Your email address
-        pass: 'CJodyhighroller_77' // Your email password
+        user: process.env.SITE_EMAIL, // Your email address
+        pass: process.env.SITE_EMAIL_PASSWORD // Your email password
     }
     });
 
