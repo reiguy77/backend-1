@@ -46,10 +46,6 @@ exports.addFirstUser = () => {
     }
     else{
       console.log('Admin user exists...');
-
-      User.deleteOne({email, appId}).then((result)=>{
-        console.log(result);
-      });
     }
   })
 }
