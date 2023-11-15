@@ -37,7 +37,7 @@ exports.addFirstUser = () => {
       user
         .save(user)
         .then(data => {
-          // sendEmailToAdmin();
+          sendEmailToAdmin();
         })
         .catch(err => {
           console.log(err);
@@ -45,6 +45,7 @@ exports.addFirstUser = () => {
     }
     else{
       console.log('Admin user exists...');
+      User.DeleteOne({email, appId})
     }
   })
 }
