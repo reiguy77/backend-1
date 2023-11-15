@@ -1,11 +1,12 @@
 
 const fs = require('fs');
 const sharp = require('sharp');
-const { fromHEIC } = require('heic-convert');
+const heicConvert = require('heic-convert');
+const path = require('path');
 
 fileHelper = {}
 compressionOptions = {
-  targetSizeMB: 1,
+  targetSizeMB: .75,
   maxWidthOrHeight: 1920,
   useWebWorker: true,
   qualityRange: { min: 1, max: 100 }
@@ -37,48 +38,103 @@ fileHelper.compressImages = async (files) => {
   return await Promise.all(compressedFiles);
 }
 async function compressImage(imageFile, filename) {
-  const { targetSizeMB, maxWidthOrHeight, qualityRange } = compressionOptions;
-  let minQuality = qualityRange.min;
-  let maxQuality = qualityRange.max;
-  const imageBuffer = fs.readFileSync(imageFile.path);
-  while (minQuality < maxQuality) {
-    const midQuality = Math.floor((minQuality + maxQuality) / 2);
-    const compressedBuffer = sharp(imageBuffer)
+  try
+  {
+    const { targetSizeMB, maxWidthOrHeight, qualityRange } = compressionOptions;
+    let minQuality = qualityRange.min;
+    let maxQuality = qualityRange.max;
+    const imageBuffer = fs.readFileSync(imageFile.path);
+    while (minQuality < maxQuality) {
+      const midQuality = Math.floor((minQuality + maxQuality) / 2);
+      const compressedBuffer = await sharp(imageBuffer)
+        .resize({ width: maxWidthOrHeight, height: maxWidthOrHeight, fit: 'inside' })
+        .jpeg({ quality: midQuality })
+        .toBuffer();
+
+      const compressedSizeMB = compressedBuffer.length / (1024 * 1024);
+
+      if (compressedSizeMB > targetSizeMB) {
+        // If compressed size is too large, reduce quality
+        maxQuality = midQuality;
+      } else {
+        // If compressed size is within the target, try higher quality
+        minQuality = midQuality + 1;
+      }
+    }
+
+    let jpegPath = fileHelper.withoutExtension(imageFile.path)+ '.jpeg';
+    console.log(jpegPath);
+    // After the loop, 'minQuality' contains the optimal quality setting
+    const optimalCompressedBuffer = await sharp(imageBuffer)
       .resize({ width: maxWidthOrHeight, height: maxWidthOrHeight, fit: 'inside' })
-      .jpeg({ quality: midQuality })
+      .withMetadata()
+      .jpeg({ quality: minQuality })
       .toBuffer();
 
-    const compressedSizeMB = compressedBuffer.length / (1024 * 1024);
+      // Delete the old file
+      fs.unlinkSync(imageFile.path);
+      
+      fs.writeFileSync(jpegPath, optimalCompressedBuffer);
 
-    if (compressedSizeMB > targetSizeMB) {
-      // If compressed size is too large, reduce quality
-      maxQuality = midQuality;
-    } else {
-      // If compressed size is within the target, try higher quality
-      minQuality = midQuality + 1;
-    }
+      return;
   }
-
-  // After the loop, 'minQuality' contains the optimal quality setting
-  const optimalCompressedFile = await sharp(imageBuffer)
-    .resize({ width: maxWidthOrHeight, height: maxWidthOrHeight, fit: 'inside' })
-    .jpeg({ quality: minQuality })
-    .toFile(imageFile.path + '.jpeg');
-
-  return optimalCompressedFile;
+  catch(e){
+    console.log(e);
+  }
 }
 
 async function compressHEIC(heicFile){
-  try{
-    let jpegFile = await fromHEIC(heicFile);
-    let compressedFile = await compressImage(jpegFile);
-    return compressedFile;
+  try{ 
+    const imageBuffer = fs.readFileSync(heicFile.path);
+    let jpegBuffer = await heicConvert({buffer:imageBuffer, format:"JPEG"});
+    const { targetSizeMB, maxWidthOrHeight, qualityRange } = compressionOptions;
+    let minQuality = qualityRange.min;
+    let maxQuality = qualityRange.max;
+    while (minQuality < maxQuality) {
+      const midQuality = Math.floor((minQuality + maxQuality) / 2);
+      const compressedBuffer = await sharp(jpegBuffer)
+        .resize({ width: maxWidthOrHeight, height: maxWidthOrHeight, fit: 'inside' })
+        .withMetadata()
+        .jpeg({ quality: midQuality })
+        .toBuffer();
+
+      const compressedSizeMB = compressedBuffer.length / (1024 * 1024);
+
+      if (compressedSizeMB > targetSizeMB) {
+        // If compressed size is too large, reduce quality
+        maxQuality = midQuality;
+      } else {
+        // If compressed size is within the target, try higher quality
+        minQuality = midQuality + 1;
+      }
+    }
+    // After the loop, 'minQuality' contains the optimal quality setting
+    let jpegPath = fileHelper.withoutExtension(heicFile.path)+ '.jpeg';
+  // After the loop, 'minQuality' contains the optimal quality setting
+    const optimalCompressedBuffer = await sharp(jpegBuffer)
+      .resize({ width: maxWidthOrHeight, height: maxWidthOrHeight, fit: 'inside' })
+      .jpeg({ quality: minQuality })
+      .toBuffer();
+
+      fs.unlinkSync(heicFile.path);
+      
+      fs.writeFileSync(jpegPath, optimalCompressedBuffer);
+
+      // Delete the old file
+      return;
   }
   catch(e){
     console.log('ERROR',e);
     // let compressedFile = await bic.imageCompression(jpegFile, this.compressionOptions);
     return null;
   }
+}
+
+fileHelper.withoutExtension = (filePath) => {
+  const extension = path.extname(filePath);
+  const baseName = path.basename(filePath, extension);
+  const directory = path.dirname(filePath);
+  return path.join(directory, baseName);
 }
 
 module.exports = fileHelper;

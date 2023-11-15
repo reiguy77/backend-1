@@ -63,6 +63,7 @@ router.post("/deleteImage", fileController.deleteImage);
 router.post("/clearImages", fileController.clearImages)
 router.post("/fileNames/", fileController.retrieveFileNames);
 router.post("/retrieveFile/", fileController.retrieveFile);
+router.post("/updateImageCategory", fileController.UpdateImageCategory);
 router.post("/deleteImageCategory", fileController.deleteImageCategory);
 router.post("/clearImageCategories", fileController.clearImageCategories);
 router.post("/retrieveCategoryNames", fileController.retrieveCategoryNames);

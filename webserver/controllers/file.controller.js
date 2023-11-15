@@ -165,7 +165,7 @@ exports.addImages = async (req, res) => {
         subfolder: subfolder,
         fileName: file.originalname,
         user: user,
-        systemFileName: file.filename
+        systemFileName: path.parse(file.filename).name+'.jpeg'
       };
 
       const savedFile = await File.create(fileData);
@@ -179,7 +179,10 @@ exports.addImages = async (req, res) => {
       };
 
       let res = await Image.create(image);
-      return res;
+      const imageUrl =  `${appId}/${user}/${fileData.subfolder}/${fileData.systemFileName}`;
+      return {
+        ...res, 
+        imageUrl};
     });
 
     let savedImages = await Promise.all(imagePromises);
@@ -325,6 +328,27 @@ exports.clearImageCategories = (req,res) => {
             error: err.message
         });
         });
+}
+exports.UpdateImageCategory = async (req, res) => {
+  const {categoryName, categoryId, user, appId} = req.body;
+  if(!categoryName || !categoryId || !user || !appId){
+    res.send({
+      error:true,
+      message: "missing category information!"
+    })
+    return;
+  }
+  else{
+    const query = { _id:categoryId, user, appId}; // Define the query to find the item
+    const update = { categoryName: categoryName };
+    const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+    const result = await ImageCategory.findOneAndUpdate(query, update, options)
+    res.send({
+      error: false,
+      data:result
+    })
+  }
+ 
 }
 async function addOrUpdateImageCategory(categoryName, subfolder,  user, appId){
     const query = { categoryName: categoryName, user:user, appId}; // Define the query to find the item
