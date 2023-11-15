@@ -157,7 +157,7 @@ exports.addImages = async (req, res) => {
   let imageFiles = req.files;
   let categoryId = await addOrUpdateImageCategory(subfolder, subfolder, user, appId);
   try {
-    await fileHelper.compressImages(imageFiles);
+    // await fileHelper.compressImages(imageFiles);
     const imagePromises = imageFiles.map(async (file) => {
       let imageProperties = {};
       // Save file details in the files collection
@@ -165,7 +165,7 @@ exports.addImages = async (req, res) => {
         subfolder: subfolder,
         fileName: file.originalname,
         user: user,
-        systemFileName: path.parse(file.filename).name+'.jpeg'
+        systemFileName: file.filename
       };
 
       const savedFile = await File.create(fileData);
