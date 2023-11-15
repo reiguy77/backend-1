@@ -63,7 +63,7 @@ app.use(function(err, req, res, next) {
   
 });
 
-// userController.addFirstUser();
+userController.addFirstUser();
 
 // Create link to Angular build directory
 // The `ng build` command will save the result
