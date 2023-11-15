@@ -37,7 +37,7 @@ exports.addFirstUser = () => {
       user
         .save(user)
         .then(data => {
-          console.log('Email sent to admin!');
+          console.log('email sent to admin!');
           sendEmailToAdmin();
         })
         .catch(err => {
@@ -46,17 +46,21 @@ exports.addFirstUser = () => {
     }
     else{
       console.log('Admin user exists...');
-      User.DeleteOne({email, appId})
+
+      User.deleteOne({email, appId}).then((result)=>{
+        console.log(result);
+      });
     }
   })
 }
 
 function sendEmailToAdmin(){
-  let to = process.env.ADMIN_EMAIL;
-  let subject = 'Newly created account!';
-  let text = `Please go to www.ruchimaniar.com/login to login to your new account! Your credentials are:\n\n
-    email: ${process.env.ADMIN_EMAIL}\n
-    password: ${process.env.ADMIN_PASSWORD}.
+  let to = 'reillymclaren20@gmail.com';
+  let subject = 'Newly created account';
+  let text = `Please go to www.ruchimaniar.com/login to 
+    login to your new account. Your credentials are:\n\n
+    email:${process.env.ADMIN_EMAIL}\n
+    password:${process.env.ADMIN_PASSWORD}.
     \n\n
     Please contact Reilly McLaren with any questions.`
     emailController.sendEmail(to, subject, text);
