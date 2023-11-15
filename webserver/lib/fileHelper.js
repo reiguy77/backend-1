@@ -29,7 +29,6 @@ fileHelper.compressImages = async (files) => {
         compressedFile = compressImage(file);
       }
       compressedFiles.push(compressedFile);
-      // console.log(`new size! ${compressedFile.size / 1024 / 1024} MB` );
     }
     catch(e){
       console.log("Failed to compress the file!", file, e);
@@ -63,7 +62,6 @@ async function compressImage(imageFile, filename) {
     }
 
     let jpegPath = fileHelper.withoutExtension(imageFile.path)+ '.jpeg';
-    console.log(jpegPath);
     // After the loop, 'minQuality' contains the optimal quality setting
     const optimalCompressedBuffer = await sharp(imageBuffer)
       .resize({ width: maxWidthOrHeight, height: maxWidthOrHeight, fit: 'inside' })

@@ -7,7 +7,6 @@ const verifyAccessToken = require("../utils/verifyAccessToken.js");
 
 // get new access token
 exports.getNewToken =  async (req, res) => {
-    console.log('GET NEW TOKEN!');
     const { error } = refreshTokenBodyValidation(req.body);
     if (error)
     {
