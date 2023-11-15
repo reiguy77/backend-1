@@ -23,10 +23,14 @@ fileHelper.compressImages = async (files) => {
     try{
       let compressedFile;
       if(file.filename.toLowerCase().includes('heic')){
-        compressedFile = compressHEIC(file);
+        usedMemory();
+        compressedFile = await compressHEIC(file);
+        usedMemory();
       }
       else{
-        compressedFile = compressImage(file);
+        usedMemory();
+        compressedFile = await compressImage(file);
+        usedMemory();
       }
       compressedFiles.push(compressedFile);
     }
@@ -34,7 +38,7 @@ fileHelper.compressImages = async (files) => {
       console.log("Failed to compress the file!", file, e);
     }
   }  
-  return await Promise.all(compressedFiles);
+  return compressedFiles;
 }
 async function compressImage(imageFile, filename) {
   try
@@ -82,6 +86,7 @@ async function compressImage(imageFile, filename) {
 }
 
 async function compressHEIC(heicFile){
+  
   try{ 
     const imageBuffer = fs.readFileSync(heicFile.path);
     let jpegBuffer = await heicConvert({buffer:imageBuffer, format:"JPEG"});
@@ -127,6 +132,22 @@ async function compressHEIC(heicFile){
     return null;
   }
 }
+
+const usedMemory = () => {
+  const memoryUsage = process.memoryUsage();
+  console.log('Memory Usage:');
+  console.log(`  - RSS: ${formatBytes(memoryUsage.rss)}`);
+  console.log(`  - Heap Total: ${formatBytes(memoryUsage.heapTotal)}`);
+  console.log(`  - Heap Used: ${formatBytes(memoryUsage.heapUsed)}`);
+}; 
+const formatBytes = (bytes) => {
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+
+  if (bytes === 0) return '0 Byte';
+  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(k)));
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+};
 
 fileHelper.withoutExtension = (filePath) => {
   const extension = path.extname(filePath);
