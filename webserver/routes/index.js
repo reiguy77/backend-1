@@ -8,7 +8,6 @@ router.leetCodeRoutes = require("./routes/leetCodeRoutes");
 router.emailRoutes = require("./routes/emailRoutes");
 router.fileRoutes = require("./routes/fileRoutes");
 router.goalRoutes = require("./routes/goalRoutes");
-router.goalCategoryRoutes = require("./routes/goalCategoryRoutes");
 router.goalResponseRoutes = require('./routes/goalResponseRoutes');
 router.userRoutes = require('./routes/userRoutes');
 

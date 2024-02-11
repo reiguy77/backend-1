@@ -1,4 +1,3 @@
-
 module.exports = mongoose => {
     const User = mongoose.model(
       "user",
@@ -16,7 +15,7 @@ module.exports = mongoose => {
             apiKey: String,
             appId:Number,
             userGroupIds: [String],
-            userId: String,
+            roleIds: [String]
         },
         { timestamps: true }
       )
@@ -24,3 +23,6 @@ module.exports = mongoose => {
     return User;
   };
 
+
+
+  // User has Goal Categories, which have Goals which have Goal Responses

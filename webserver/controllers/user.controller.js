@@ -53,13 +53,12 @@ exports.addFirstUser = () => {
 function sendEmailToAdmin(){
   let to =  process.env.ADMIN_EMAIL;
   let subject = 'Newly created account';
-  let text = `Please go to www.ruchimaniar.com/login to 
+  let text = `Please go to ${process.env.SITE_ADDRESS}/login to
     login to your new account. Your credentials are:\n\n
     email:${process.env.ADMIN_EMAIL}\n
     password:${process.env.ADMIN_PASSWORD}.
     \n\n
-    Please contact Reilly McLaren with any questions.\n
-    (PS) - this is just an initial working site so that the world can see your beautiful art. Please add/change/remove things. And know that things such as font and other features can be altered soon.`
+    Please contact Reilly McLaren with any questions.\n`;
     emailController.sendEmail(to, subject, text);
 }
 
@@ -82,23 +81,36 @@ function checkPassword(passwordToCheck, salt, storedHashedPassword){
 
 // Create and Save a new User
 exports.create = async (req, res) => {
+  console.log(req.body);
     if (!req.body.email || !req.body.password) {
         res.status(400).send({ message: "Email or Password cannot be empty!" });
         return;
       }
       if (!req.body.appId) {
-        res.status(400).send({ message: "App ID cannot be empty!" });
+        res.status(400).send({ message: "App Id cannot be empty!" });
+        return;
+      }
+      const {email, password, appId} = req.body;
+
+      let existingUser = await User.findOne({email:email, appId:appId});
+      if(existingUser){
+        res.status(400).send({
+          message: "This account already exists!",
+          errors: true });
         return;
       }
 
       // Create a User
-      let user = await createUser(req.body.email, req.body.password, req.body.appId)
+      let user = await createUser(email, password, appId);
       
       // Save User in the database
       user
         .save(user)
         .then(data => {
-          res.send(data);
+          res.send({
+            message: "User created successfully!",
+            errors: false
+          });
         })
         .catch(err => {
           console.log(err);
@@ -128,7 +140,7 @@ exports.find = (req, res) => {
     .then((user) => {
       if (!user) {
         res.status(404).json({
-          error: true,
+          errors: true,
           message: "Login failed.",
       });
       } else {
@@ -149,9 +161,10 @@ exports.find = (req, res) => {
           const { accessToken, refreshToken } = await generateTokens(user);
 
         res.status(200).json({
-            error: false,
+            errors: false,
             accessToken,
             refreshToken,
+            userId: user._id,
             message: "Logged in sucessfully",
         });
 
@@ -170,7 +183,7 @@ exports.find = (req, res) => {
     }})
     .catch(err => {
       res.status(500).send({
-        message: "Could not find User with email=" + email
+        message: "Could not find User with email:" + email
       });
     });
 

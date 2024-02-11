@@ -10,7 +10,6 @@ const leetCodeRoutes = require("./routes/leetCodeRoutes");
 const emailRoutes = require("./routes/emailRoutes");
 const fileRoutes = require("./routes/fileRoutes");
 const goalRoutes = require("./routes/goalRoutes");
-const goalCategoryRoutes = require("./routes/goalCategoryRoutes");
 const goalResponseRoutes = require('./routes/goalResponseRoutes');
 const userRoutes = require('./routes/userRoutes');
 const tokenRoutes = require('./routes/tokenRoutes');
@@ -32,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'assets')));
 dotenv.config({ path: envFilePath });
 
 var corsOptions = { 
-  origin: 'http://localhost:4201',  
+  origin: 'http://localhost:4200',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
@@ -123,7 +122,6 @@ app.use("/api/email", emailRoutes);
 app.use("/api/file", fileRoutes);
 app.use("/api/goal", goalRoutes);
 app.use("/api/goalResponse", goalResponseRoutes);
-app.use("/api/goalCategory", goalCategoryRoutes);
 app.use("/api/user", userRoutes)
 app.use("/api/token", tokenRoutes);
 app.use('/api/page', pageRoutes);

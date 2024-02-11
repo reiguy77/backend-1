@@ -3,25 +3,28 @@ module.exports = mongoose => {
       "goal",
       mongoose.Schema(
         {
+          userId: String,
           title: String,
           task: String,
-          why: String, 
+          why: String,
           active: Boolean,
-          goodGoal: Boolean,
           dateCreated:Date,
-          //if it will have children goals - 
-          //i.e. something longer than 3 weeks
           isLongTermGoal: Boolean,
-          goalCategoryId: String,
           longerTermGoalId: String,
           dateCompleted: Date,
-          //these are specific to short term goals
           desiredFrequency: Number,
           where: String,
           when: String,
           deadline: Date,
           parentGoalId: String,
-          childGoalId: String
+          childGoalId: String,
+          goodGoal: Boolean,
+          wasSuccessful: Boolean,
+          reflection: String,
+          goalResponseIds: [String],
+          relatedGoalIds: [String],
+          childGoalIds: [String],
+          goalTagIds: [String]
         },
         { timestamps: true }
       )

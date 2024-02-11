@@ -1,13 +1,16 @@
-const db = require("../models");
+const db = require("../../models");
 const GoalResponse = db.goalResponse;
 
 
 // Create and Save a new goalResponse
 exports.create = async (req, res) => {
   try {
+      const {goalId, userId } = req.body;
       // Validate request body
-      if (!req.body.goalId) {
-          return res.status(400).json({ message: "goalId is required." });
+      if (!goalId || !userId) {
+          return res.status(400).json({
+            errors: true,
+            message: "Related ids are required." });
       }
       
       // Create a new goalResponse instance
@@ -15,9 +18,12 @@ exports.create = async (req, res) => {
 
       // Save the goalResponse to the database
       const savedResponse = await goalResponse.save();
-
+      console.log(savedResponse);
       // Return the saved response
-      res.status(201).json(savedResponse);
+      res.status(201).json({
+        errors: false,
+        data:savedResponse
+      });
   } catch (error) {
       console.error("Error creating goal response:", error);
       res.status(500).json({ message: "An error occurred while creating the goal response." });
